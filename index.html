@@ -1,57 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>P2P Services</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P2P Services</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="module">
+  import "@worldcoin/idkit-standalone";
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const connectBtn = document.getElementById("connectBtn");
+
+    connectBtn.addEventListener("click", async () => {
+      try {
+        // Initialize IDKit
+        await IDKit.init({
+          app_id: "app_ce4cb73cb75fc3b73b71ffb4de178410",  // your app id
+          action: "test-action",
+          signal: "user_12345",
+          action_description: "Verify your World ID",
+          verification_level: "orb",  // or "device" for dev/testing
+          handleVerify: async (response) => {
+            // Send proof to PythonAnywhere backend
+            const verifyRes = await fetch("https://P2PServices.pythonanywhere.com/register/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+
+            if (!verifyRes.ok) throw new Error("Verification failed on backend");
+            const data = await verifyRes.json();
+            console.log("Backend response:", data);
+          },
+          onSuccess: (response) => {
+            console.log("✅ Verification successful:", response);
+            connectBtn.innerText = "Connected ✅";
+            connectBtn.disabled = true;
+            connectBtn.classList.add("bg-green-500");
+          },
+        });
+
+        await IDKit.open();
+      } catch (err) {
+        console.error("❌ Error opening IDKit:", err);
+      }
+    });
+  });
+</script>
 </head>
 <body class="bg-gradient-to-br from-slate-900 to-gray-800 flex items-center justify-center min-h-screen text-white">
 
-  <div class="w-[360px] max-w-full px-6 py-10 rounded-2xl shadow-2xl bg-gradient-to-b from-gray-900 to-slate-800">
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-extrabold tracking-tight text-indigo-400">P2P Services</h1>
-      <p class="text-gray-300 mt-2 text-sm">
-        Buy & sell crypto directly with fiat.  
-        Recharge your phone instantly using crypto.
-      </p>
-    </div>
+<div class="w-[360px] max-w-full px-6 py-10 rounded-2xl shadow-2xl bg-gradient-to-b from-gray-900 to-slate-800 text-center">
+  <h1 class="text-3xl font-extrabold text-indigo-400 mb-2">P2P Services</h1>
+  <p class="text-gray-300 mb-8 text-sm">
+    Buy & sell crypto directly with fiat.<br>
+    Recharge your mobile using crypto — instantly.
+  </p>
 
-    <!-- Icon or Illustration -->
-    <div class="flex justify-center mb-8">
-      <div class="w-24 h-24 bg-indigo-500 bg-opacity-20 flex items-center justify-center rounded-full shadow-inner">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 8c1.657 0 3 1.343 3 3v4H9v-4c0-1.657 1.343-3 3-3zM4 12v7h16v-7M4 12l8-8m0 0l8 8" />
-        </svg>
-      </div>
+  <div class="space-y-3 mb-10">
+    <div class="bg-gray-800 bg-opacity-50 rounded-xl p-3">
+      <p class="font-semibold text-indigo-300">🔁 P2P Exchange</p>
+      <p class="text-sm text-gray-400">Trade crypto safely & easily</p>
     </div>
-
-    <!-- Services Section -->
-    <div class="mb-10 text-center space-y-3">
-      <div class="bg-gray-800 bg-opacity-50 rounded-xl p-3">
-        <p class="font-semibold text-indigo-300">🔁 P2P Crypto Exchange</p>
-        <p class="text-sm text-gray-400">Trade crypto safely with verified users.</p>
-      </div>
-      <div class="bg-gray-800 bg-opacity-50 rounded-xl p-3">
-        <p class="font-semibold text-indigo-300">📱 Mobile Recharge</p>
-        <p class="text-sm text-gray-400">Use crypto to recharge instantly.</p>
-      </div>
-    </div>
-
-    <!-- Connect Button -->
-    <div class="flex justify-center">
-      <button class="bg-indigo-500 hover:bg-indigo-600 active:scale-95 transition-all duration-200 text-white font-semibold px-10 py-3 rounded-full shadow-lg">
-        Connect
-      </button>
-    </div>
-
-    <!-- Footer -->
-    <div class="text-center mt-8">
-      <p class="text-xs text-gray-500">Powered by <span class="text-indigo-400 font-semibold">P2P Services</span></p>
+    <div class="bg-gray-800 bg-opacity-50 rounded-xl p-3">
+      <p class="font-semibold text-indigo-300">📱 Crypto Recharge</p>
+      <p class="text-sm text-gray-400">Top-up phones using crypto</p>
     </div>
   </div>
+
+  <button id="connectBtn"
+    class="bg-indigo-500 hover:bg-indigo-600 active:scale-95 transition-all duration-200 text-white font-semibold px-10 py-3 rounded-full shadow-lg">
+    Connect
+  </button>
+
+  <p class="text-xs text-gray-500 mt-8">Powered by <span class="text-indigo-400 font-semibold">World ID</span></p>
+</div>
 
 </body>
 </html>
